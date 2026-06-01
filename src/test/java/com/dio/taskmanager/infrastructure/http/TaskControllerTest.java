@@ -1,23 +1,41 @@
 package com.dio.taskmanager.infrastructure.http;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.restdocs.RestDocumentationExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@ExtendWith({RestDocumentationExtension.class, SpringExtension.class})
 @SpringBootTest
+@AutoConfigureMockMvc
 class TaskControllerTest {
-	
-	MockMvc mockMvc;
 
-	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+    @Autowired
+    private MockMvc mockMvc;
 
+    @Test
+    @DisplayName("Should create a task successfully")
+    void shouldCreateTaskSuccessfully() throws Exception {
+        String requestBody = """
+            {
+                "title": "Estudar testes com Spring",
+                "description": "Criar um teste simples usando MockMvc"
+            }
+            """;
+
+        mockMvc.perform(post("/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").exists())
+            .andExpect(jsonPath("$.title").value("Estudar testes com Spring"))
+            .andExpect(jsonPath("$.description").value("Criar um teste simples usando MockMvc"))
+            .andExpect(jsonPath("$.status").value("PENDING"));
+    }
 }
